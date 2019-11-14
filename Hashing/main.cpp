@@ -11,6 +11,8 @@ int main(int argc, char * argv[]) {
 
   while(input >> ID >> sales >> f_name >> l_name){
     D.insert(ID, sales, f_name, l_name);
+    D.insertID(ID, sales, f_name, l_name);
+
 
   }
   printMenu();
@@ -51,5 +53,8 @@ int main(int argc, char * argv[]) {
       cout << "Not a valid command." << endl;
     }
   } 
+
+  cout << "Total Annual Sales: "  << D.sumAll() << endl;
+  cout << "Average Sale per Employee: " << D.calcAverage() << endl;
   return 0;
 }

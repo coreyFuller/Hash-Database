@@ -1,63 +1,108 @@
 #include "database.h"
 
-int myhash(string s, int size){
+int string_hash(string s, int tableName_size){
 
  unsigned int i, h = 0;
   for (i=0; i<s.length(); i++)
-    h = (h * 2917 + (unsigned int)s[i]) % size;
+    h = (h * 2917 + (unsigned int)s[i]) % tableName_size;
   return h;
+}
+
+int ID_hash(int ID, int tableID_size)
+{
+return ID % tableID_size;
 }
 
 Database::Database()
 {
-    size = 4;
-    sum = average = 0;
-    table = new Node *[size];
-    for(int i = 0 ; i < size; i++){
-        table[i] = NULL;
+    tableName_size = 4;
+    tableID_size = 10000;
+    tableID_used = 0;
+    tableName_used = 0;
+    sum = average = employee_count = 0;
+    table_name = new Node *[tableName_size];
+    for(int i = 0 ; i < tableName_size; i++){
+        table_name[i] = NULL;
     }
-    used = 0;
+
+    tableID = new Node*[tableID_size];
+    for(int i = 0; i < tableID_size ;i++)
+    {
+      tableID[i] = NULL;
+    }
 }
 
 void Database::insert(int ID,double sales, string f_name, string l_name)
 {
-     if(used == size)
+     if(tableName_used == tableName_size)
      {
-     size *= 2;
-     Node ** newTable = new Node *[size]; 
-     for (int k = 0; k < size; k++) {
+     tableName_size *= 2;
+     Node ** newTable = new Node *[tableName_size]; 
+     for (int k = 0; k < tableName_size; k++) {
       newTable[k] = NULL; 
     }
-    for(int i = 0; i < used; i++){
-      Node * temp = table[i]; 
+    for(int i = 0; i < tableName_used; i++){
+      Node * temp = table_name[i]; 
         while(temp) { 
-          newTable[myhash(temp->l_name, size)] = new Node(temp->ID, temp->sales, temp->f_name, temp->l_name, newTable[myhash(temp->l_name, size)]); // copies elements to new table
+          newTable[string_hash(temp->l_name, tableName_size)] = new Node(temp->ID, temp->sales, temp->f_name, temp->l_name, newTable[string_hash(temp->l_name, tableName_size)]); // copies elements to new table
           temp = temp->next;
         }
     }
 
-    for (int j = 0; j < used; j++) {    
-    Node * temp = table[j];
+    for (int j = 0; j < tableName_used; j++) {    
+    Node * temp = table_name[j];
       while(temp) {
-      table[j] = temp->next;   
+      table_name[j] = temp->next;   
       delete temp;     // deallocates the old table
-      temp = table[j];
+      temp = table_name[j];
       }
     }
-    delete [] table;
-    table = newTable;
+    delete [] table_name;
+    table_name = newTable;
   }
 
-   int h = myhash(l_name, size);
-   table[h] = new Node(ID, sales, f_name, l_name, table[h]);
+   int h = string_hash(l_name, tableName_size);
+   table_name[h] = new Node(ID, sales, f_name, l_name, table_name[h]);
+   employee_count++;
 }
 
+ void Database::insertID(int ID, double sales, string f_name, string l_name)
+ {
+   if(tableID_used == tableID_size)
+     {
+     tableID_size *= 2;
+     Node ** newTable = new Node *[tableID_size]; 
+     for (int k = 0; k < tableID_size; k++) {
+      newTable[k] = NULL; 
+    }
+    for(int i = 0; i < tableName_used; i++){
+      Node * temp = tableID[i]; 
+        while(temp) { 
+          newTable[ID_hash(temp->ID, tableID_size)] = new Node(temp->ID, temp->sales, temp->f_name, temp->l_name, newTable[ID_hash(temp->ID, tableID_size)]); // copies elements to new table
+          temp = temp->next;
+        }
+    }
+
+    for (int j = 0; j < tableID_used; j++) {    
+    Node * temp = tableID[j];
+      while(temp) {
+      tableID[j] = temp->next;   
+      delete temp;     // deallocates the old table
+      temp = tableID[j];
+      }
+    }
+    delete [] tableID;
+    tableID = newTable;
+     }
+    int h = ID_hash(ID, tableID_size);
+    tableID[h] = new Node(ID, sales, f_name, l_name, tableID[h]);
+ }
 void Database::print() 
 {
 
-for(int i = 0; i < size; i++)
+for(int i = 0; i < tableName_size; i++)
 {
-    for(Node * temp = table[i]; temp; temp = temp->next)
+    for(Node * temp = table_name[i]; temp; temp = temp->next)
     {
         cout << "Employee " << temp->ID <<  ": " << temp->f_name << " " << temp->l_name << endl;
         cout << "Total Sales: $" << temp->sales << endl << endl;
@@ -67,8 +112,8 @@ for(int i = 0; i < size; i++)
 
 Node * Database::search_lastName(string l_name)
 {
-    int h = myhash(l_name, size);
-    for(Node * temp = table[h]; temp; temp = temp->next)
+    int h = string_hash(l_name, tableName_size);
+    for(Node * temp = table_name[h]; temp; temp = temp->next)
     {
         if(temp->l_name == l_name)
         {
@@ -83,16 +128,16 @@ Node * Database::search_lastName(string l_name)
  bool Database::remove(string s)
  {
    Node * temp = NULL;
-   int h = myhash(s, size);
-    if(table[h]->l_name == s)
+   int h = string_hash(s, tableName_size);
+    if(table_name[h]->l_name == s)
     {  
-    temp = table[h];
-    table[h] = table[h]->next;
+    temp = table_name[h];
+    table_name[h] = table_name[h]->next;
     delete temp;
     return true;
     }
   else {
-    for(Node * current =table[h]; current; temp = current, current = current->next) {
+    for(Node * current =table_name[h]; current; temp = current, current = current->next) {
       if(current->l_name == s) {
         temp->next = current->next;
         delete current;
@@ -105,19 +150,17 @@ Node * Database::search_lastName(string l_name)
  string * Database::search_ID(int ID)
  {
    string * name = new string[2];
-   for(int i = 0; i<size; i++)
+   int h = ID_hash(ID, tableID_size);
+   for(Node * temp = tableID[h]; temp; temp = temp->next)
    {
-     for(Node * temp = table[i]; temp; temp = temp->next)
+    if(temp->ID == ID)
      {
-       if(temp->ID == ID)
-       {
-          cout << "Employee " << temp->ID << ": " << temp->f_name << " " << temp->l_name << endl; 
-          cout << "Total Sales: " <<  temp->sales << endl;
-          name[0] = temp->f_name; name[1] = temp->l_name;
-          return name;
-       }
+    cout << "Employee " << temp->ID << ": " << temp->f_name << " " << temp->l_name << endl; 
+    cout << "Total Sales: " <<  temp->sales << endl;
+    name[0] = temp->f_name; name[1] = temp->l_name;
+    return name;
      }
-   }
+    }
    return NULL;
  }
 
@@ -134,14 +177,29 @@ void printMenu()
 
 Database::~Database()
 {
-  for (int i=0; i<size; i++) 
+  for (int i=0; i<tableName_size; i++) 
   {
-    while (table[i] != NULL) 
+    while (table_name[i] != NULL) 
     {
-      Node *temp = table[i];
-      table[i] = table[i]->next;
+      Node *temp = table_name[i];
+      table_name[i] = table_name[i]->next;
       delete temp;
     }
   }
-  delete [] table;
+  delete [] table_name;
+}
+
+double Database::sumAll()
+{
+  for(int i = 0; i < tableName_size;i++)
+  {
+    for(Node * temp = table_name[i]; temp; temp = temp->next)
+    {
+      sum += temp->sales;
+    }
+  }
+}
+double Database::calcAverage()
+{
+  return sum / employee_count;
 }

@@ -24,18 +24,25 @@ class Database
 {
 
  private:
-  Node ** table;
-  int size;
-  int used;
+  Node ** table_name;
+  Node ** tableID;
+  int tableName_size;
+  int tableName_used;
+  int tableID_size;
+  int tableID_used;
+  int employee_count;
   double sum, average;
   
  public:
   Database();
   void insert(int, double, string, string);
+  void insertID(int, double, string, string);
   void print();
   bool remove(string);
   string * search_ID(int ID);
   Node * search_lastName(string l_name);
+  double calcAverage();
+  double sumAll();
   ~Database();
 };
   
