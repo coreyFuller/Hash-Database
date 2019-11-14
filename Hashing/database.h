@@ -3,6 +3,7 @@
 #include <cmath>
 #include <fstream>
 #include <cstdlib>
+#include <iomanip>
 using namespace std;
 
 
@@ -31,7 +32,9 @@ class Database
   int tableID_size;
   int tableID_used;
   int employee_count;
-  double sum, average;
+  string lowest_earner[2];
+  string highest_earner[2];
+  double sum, average, min, max;
   
  public:
   Database();
@@ -43,6 +46,7 @@ class Database
   Node * search_lastName(string l_name);
   double calcAverage();
   double sumAll();
+  void report(ofstream &out);
   ~Database();
 };
   

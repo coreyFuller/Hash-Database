@@ -4,6 +4,7 @@ int main(int argc, char * argv[]) {
 
   srand(time(0));
   ifstream input("data.txt");
+  ofstream output("report.txt");
   Database D;
   int ID = 0, choice = -1;
   double sales = 0;
@@ -12,9 +13,8 @@ int main(int argc, char * argv[]) {
   while(input >> ID >> sales >> f_name >> l_name){
     D.insert(ID, sales, f_name, l_name);
     D.insertID(ID, sales, f_name, l_name);
-
-
   }
+  
   printMenu();
   while(choice != 0)
   {
@@ -47,14 +47,16 @@ int main(int argc, char * argv[]) {
     cin >> ID;
     if(!D.search_ID(ID)) cout << "Employee not in the database." << endl;
       break;
+    case 6:
+      cout << endl;
+      printMenu();
+      break;
     case 0:
       break;
     default:
       cout << "Not a valid command." << endl;
     }
   } 
-
-  cout << "Total Annual Sales: "  << D.sumAll() << endl;
-  cout << "Average Sale per Employee: " << D.calcAverage() << endl;
+  D.sumAll(); D.calcAverage(); D.report(output);
   return 0;
 }
